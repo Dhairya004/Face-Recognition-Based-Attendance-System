@@ -94,7 +94,17 @@ def add_attendance(name):
 @app.route('/')
 def home():
     names,rolls,times,l = extract_attendance()    
-    return render_template('home.html',names=names,rolls=rolls,times=times,l=l,totalreg=totalreg(),datetoday2=datetoday2) 
+    return render_template('home.html',names=names,rolls=rolls,times=times,l=l,totalreg=totalreg(),datetoday2=datetoday2)
+
+#### Sign In page
+@app.route('/signin')
+def signin():
+    return render_template('signin2.html')
+
+#### Register page
+@app.route('/register')
+def register():
+    return render_template('register2.html')
 
 
 #### This function will run when we click on Take Attendance Button
