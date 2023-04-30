@@ -1,6 +1,6 @@
 import cv2
 import os
-from flask import Flask,request,render_template
+from flask import Flask,request,render_template,redirect
 from datetime import date
 from datetime import datetime
 import numpy as np
@@ -30,6 +30,9 @@ if not os.path.isdir('static/faces'):
 if f'Attendance-{datetoday}.csv' not in os.listdir('Attendance'):
     with open(f'Attendance/Attendance-{datetoday}.csv','w') as f:
         f.write('Name,Roll,Time')
+if 'users.csv' not in os.listdir():
+    with open('users.csv','w') as g:
+        g.write('Username,Password,Is Admin?')
 
 
 #### get a number of total registered users
@@ -92,19 +95,42 @@ def add_attendance(name):
 
 #### Our main page
 @app.route('/')
-def home():
+def displayHomePage():
     names,rolls,times,l = extract_attendance()    
     return render_template('home.html',names=names,rolls=rolls,times=times,l=l,totalreg=totalreg(),datetoday2=datetoday2)
 
 #### Sign In page
 @app.route('/signin')
-def signin():
+def displaySigninPage():
     return render_template('signin2.html')
+
+#### Admin Page
+@app.route('/admin')
+def displayAdminPage():
+    records = os.listdir('Attendance')
+    return render_template('admin.html', records)
 
 #### Register page
 @app.route('/register')
-def register():
+def displayRegisterPage():
     return render_template('register2.html')
+
+#### This function will run when the user registers
+@app.route('/register_request',methods=['POST'])
+def registerUser():
+    usernameForRegister = request.form['usernameForRegister']
+    passwordForRegister = request.form['passwordForRegister']
+    try:
+        if request.form['makemeadmin'] == 'on':
+            isAdmin = True
+    except:
+        isAdmin = False
+
+    # users = pd.read_csv('users.csv')
+    with open('users.csv', 'a') as f:
+        f.write(f'\n{usernameForRegister},{passwordForRegister},{"Yes" if isAdmin else "No"}')
+    
+    return redirect('/')
 
 
 #### This function will run when we click on Take Attendance Button
@@ -125,7 +151,7 @@ def start():
             add_attendance(identified_person)
             cv2.putText(frame,f'{identified_person}',(30,30),cv2.FONT_HERSHEY_SIMPLEX,1,(255, 0, 20),2,cv2.LINE_AA)
         cv2.imshow('Attendance',frame)
-        if cv2.waitKey(1)==27:
+        if cv2.waitKey(1)==27 or cv2.getWindowProperty('Attendance', cv2.WND_PROP_VISIBLE) <1:
             break
     cap.release()
     cv2.destroyAllWindows()
@@ -148,16 +174,16 @@ def add():
         faces = extract_faces(frame)
         for (x,y,w,h) in faces:
             cv2.rectangle(frame,(x, y), (x+w, y+h), (255, 0, 20), 2)
-            cv2.putText(frame,f'Images Captured: {i}/50',(30,30),cv2.FONT_HERSHEY_SIMPLEX,1,(255, 0, 20),2,cv2.LINE_AA)
+            cv2.putText(frame,f'Images Captured: {i}/30',(30,30),cv2.FONT_HERSHEY_SIMPLEX,1,(255, 0, 20),2,cv2.LINE_AA)
             if j%10==0:
                 name = newusername+'_'+str(i)+'.jpg'
                 cv2.imwrite(userimagefolder+'/'+name,frame[y:y+h,x:x+w])
                 i+=1
             j+=1
-        if j==500:
+        if j==300:
             break
         cv2.imshow('Adding new User',frame)
-        if cv2.waitKey(1)==27:
+        if cv2.waitKey(1)==27 or not cv2.getWindowProperty('Attendance', cv2.WND_PROP_VISIBLE):
             break
     cap.release()
     cv2.destroyAllWindows()
