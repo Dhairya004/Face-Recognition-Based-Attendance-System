@@ -1,5 +1,5 @@
 # Face Recognition Based Attendance System
-This is a system for taking attendance of the student using their face. It has separate dashboards for admin and student. Students can register their face on the system, and can mark their attendance for the day. The admin can view the attendance record for that given day and for other days too.
+This is a system through which students can mark their attendance using their face. It has separate dashboards for admin and student. Students can register their face on the system, and can mark their attendance for the day. The admin can view the attendance record for that given day and for other days too.
 
 ## Home page:
 
